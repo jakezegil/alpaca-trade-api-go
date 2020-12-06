@@ -27,7 +27,7 @@ func SetDataStream(streamName string) {
 }
 
 // Register a handler for a given stream, Alpaca or Polygon.
-func Register(stream string, handler func(msg interface{})) (err error) {
+func Register(stream string, handler func(msg interface{}), base string) (err error) {
 	once.Do(func() {
 		if u == nil {
 
@@ -38,7 +38,7 @@ func Register(stream string, handler func(msg interface{})) (err error) {
 				dataStream = polygon.GetStream()
 			}
 			u = &Unified{
-				alpaca: alpaca.GetStream(),
+				alpaca: alpaca.GetStream(base),
 				data:   dataStream,
 			}
 		}

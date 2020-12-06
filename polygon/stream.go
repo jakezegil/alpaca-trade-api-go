@@ -10,8 +10,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/jakezegil/alpaca-trade-api-go/common"
 	"github.com/gorilla/websocket"
+	"github.com/jakezegil/alpaca-trade-api-go/common"
 )
 
 const (
@@ -36,6 +36,7 @@ type Stream struct {
 	conn                  *websocket.Conn
 	authenticated, closed atomic.Value
 	handlers              sync.Map
+	Credentials           *common.APIKey
 }
 
 // Subscribe to the specified Polygon stream channel.
@@ -196,7 +197,7 @@ func (s *Stream) auth() (err error) {
 
 	authRequest := PolygonClientMsg{
 		Action: "auth",
-		Params: common.Credentials().PolygonKeyID,
+		Params: s.Credentials.PolygonKeyID,
 	}
 
 	if err = s.conn.WriteJSON(authRequest); err != nil {

@@ -82,7 +82,7 @@ func main() {
 	os.Setenv(common.EnvApiKeyID, "your_key_id")
 	os.Setenv(common.EnvApiSecretKey, "your_secret_key")
 
-	if err := stream.Register(alpaca.TradeUpdates, tradeHandler); err != nil {
+	if err := stream.Register(alpaca.TradeUpdates, tradeHandler, "streaming_base"); err != nil {
 		panic(err)
 	}
 

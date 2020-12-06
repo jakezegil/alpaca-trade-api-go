@@ -32,14 +32,14 @@ func (s *StreamTestSuite) TestStream() {
 	h := func(msg interface{}) {}
 
 	// successful
-	assert.Nil(s.T(), Register(alpaca.TradeUpdates, h))
-	assert.Nil(s.T(), Register(alpaca.AccountUpdates, h))
-	assert.Nil(s.T(), Register("T.*", h))
+	assert.Nil(s.T(), Register(alpaca.TradeUpdates, h, ""))
+	assert.Nil(s.T(), Register(alpaca.AccountUpdates, h, ""))
+	assert.Nil(s.T(), Register("T.*", h, ""))
 	assert.Nil(s.T(), Close())
 
 	// failure
 	s.alp.fail = true
-	assert.NotNil(s.T(), Register(alpaca.TradeUpdates, h))
+	assert.NotNil(s.T(), Register(alpaca.TradeUpdates, h, ""))
 	assert.NotNil(s.T(), Close())
 }
 

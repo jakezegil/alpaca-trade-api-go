@@ -11,8 +11,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/jakezegil/alpaca-trade-api-go/common"
 	"github.com/gorilla/websocket"
+	"github.com/jakezegil/alpaca-trade-api-go/common"
 )
 
 const (
@@ -40,6 +40,7 @@ type Stream struct {
 	authenticated, closed atomic.Value
 	handlers              sync.Map
 	base                  string
+	Credentials           *common.APIKey
 }
 
 // Subscribe to the specified Alpaca stream channel.
@@ -219,8 +220,8 @@ func (s *Stream) auth() (err error) {
 	authRequest := ClientMsg{
 		Action: "authenticate",
 		Data: map[string]interface{}{
-			"key_id":     common.Credentials().ID,
-			"secret_key": common.Credentials().Secret,
+			"key_id":     s.Credentials.ID,
+			"secret_key": s.Credentials.Secret,
 		},
 	}
 
@@ -250,7 +251,7 @@ func (s *Stream) auth() (err error) {
 }
 
 // GetStream returns the singleton Alpaca stream structure.
-func GetStream() *Stream {
+func GetStream(base string) *Stream {
 	once.Do(func() {
 		str = &Stream{
 			authenticated: atomic.Value{},
