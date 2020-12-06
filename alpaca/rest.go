@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/alpacahq/alpaca-trade-api-go/common"
+	"github.com/jakezegil/alpaca-trade-api-go/common"
 )
 
 var (

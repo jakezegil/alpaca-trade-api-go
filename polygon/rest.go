@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/alpacahq/alpaca-trade-api-go/common"
+	"github.com/jakezegil/alpaca-trade-api-go/common"
 	try "gopkg.in/matryer/try.v1"
 )
 
