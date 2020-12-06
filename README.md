@@ -1,5 +1,6 @@
 
 # alpaca-trade-api-go
+# this is a fork, and likely this README is currently out of date
 
 [![CircleCI Status](https://circleci.com/gh/alpacahq/alpaca-trade-api-go.svg?style=svg)](https://circleci.com/gh/alpacahq/alpaca-trade-api-go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/alpacahq/alpaca-trade-api-go)](https://goreportcard.com/report/github.com/alpacahq/alpaca-trade-api-go)
@@ -39,11 +40,11 @@ func init() {
 
     fmt.Printf("Running w/ credentials [%v %v]\n", common.Credentials().ID, common.Credentials().Secret)
 
-    alpaca.SetBaseUrl("https://paper-api.alpaca.markets")
 }
 
 func main() {
-    alpacaClient := alpaca.NewClient(common.Credentials())
+	alpacaClient := alpaca.NewClient(common.Credentials())
+    alpaca.SetDefaultURL("https://paper-api.alpaca.markets")
     acct, err := alpacaClient.GetAccount()
     if err != nil {
         panic(err)
@@ -128,8 +129,8 @@ For paper trading, set the environment variable `APCA_API_BASE_URL`.
 $ export APCA_API_BASE_URL=https://paper-api.alpaca.markets
 ```
 
-You can also instead use the function `alpaca.SetBaseUrl("https://paper-api.alpaca.markets")` 
-to configure the endpoint.
+You can also instead use the function `alpaca.SetDefaultURL("https://paper-api.alpaca.markets")` 
+to configure the default endpoint.
 
 
 ## Running Multiple Strategies

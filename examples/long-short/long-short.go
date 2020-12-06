@@ -44,7 +44,6 @@ func init() {
 	if common.Credentials().Secret == "" {
 		os.Setenv(common.EnvApiSecretKey, API_SECRET)
 	}
-	alpaca.SetBaseUrl(BASE_URL)
 
 	// Format the allStocks variable for use in the class.
 	allStocks := []stockField{}
@@ -54,7 +53,7 @@ func init() {
 	}
 
 	alpacaClient = alpacaClientContainer{
-		alpaca.NewClient(common.Credentials()),
+		alpaca.NewClient(common.Credentials(), BASE_URL),
 		bucket{[]string{}, -1, -1, 0},
 		bucket{[]string{}, -1, -1, 0},
 		make([]stockField, len(allStocks)),

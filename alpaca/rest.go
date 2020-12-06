@@ -18,8 +18,8 @@ import (
 var (
 	// DefaultClient is the default Alpaca client using the
 	// environment variable set credentials
-	DefaultClient = NewClient(common.Credentials())
-	base          = "https://api.alpaca.markets"
+	defaultBase   = "https://api.alpaca.markets"
+	DefaultClient = NewClient(common.Credentials(), defaultBase)
 	dataUrl       = "https://data.alpaca.markets"
 	apiVersion    = "v2"
 	do            = func(c *Client, req *http.Request) (*http.Response, error) {
@@ -44,11 +44,11 @@ var (
 )
 
 func init() {
-	if s := os.Getenv("APCA_API_BASE_URL"); s != "" {
-		base = s
-	} else if s := os.Getenv("ALPACA_BASE_URL"); s != "" {
+	if s := os.Getenv("APCA_API_DEFAULT_BASE_URL"); s != "" {
+		defaultBase = s
+	} else if s := os.Getenv("ALPACA_DEFAULT_BASE_URL"); s != "" {
 		// legacy compatibility...
-		base = s
+		defaultBase = s
 	}
 	if s := os.Getenv("APCA_DATA_URL"); s != "" {
 		dataUrl = s
@@ -72,21 +72,23 @@ func (e *APIError) Error() string {
 // Client is an Alpaca REST API client
 type Client struct {
 	credentials *common.APIKey
-}
-
-func SetBaseUrl(baseUrl string) {
-	base = baseUrl
+	base        string
 }
 
 // NewClient creates a new Alpaca client with specified
 // credentials
-func NewClient(credentials *common.APIKey) *Client {
-	return &Client{credentials: credentials}
+func NewClient(credentials *common.APIKey, base string) *Client {
+	return &Client{credentials: credentials, base: base}
+}
+
+// Set base at Client Level
+func (c *Client) SetDefaultURL(baseUrl string) {
+	c.base = baseUrl
 }
 
 // GetAccount returns the user's account information.
 func (c *Client) GetAccount() (*Account, error) {
-	u, err := url.Parse(fmt.Sprintf("%s/%s/account", base, apiVersion))
+	u, err := url.Parse(fmt.Sprintf("%s/%s/account", c.base, apiVersion))
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +109,7 @@ func (c *Client) GetAccount() (*Account, error) {
 
 // GetConfigs returns the current account configurations
 func (c *Client) GetAccountConfigurations() (*AccountConfigurations, error) {
-	u, err := url.Parse(fmt.Sprintf("%s/%s/account/configurations", base, apiVersion))
+	u, err := url.Parse(fmt.Sprintf("%s/%s/account/configurations", c.base, apiVersion))
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +130,7 @@ func (c *Client) GetAccountConfigurations() (*AccountConfigurations, error) {
 
 // EditConfigs patches the account configs
 func (c *Client) UpdateAccountConfigurations(newConfigs AccountConfigurationsRequest) (*AccountConfigurations, error) {
-	u, err := url.Parse(fmt.Sprintf("%s/%s/account/configurations", base, apiVersion))
+	u, err := url.Parse(fmt.Sprintf("%s/%s/account/configurations", c.base, apiVersion))
 	if err != nil {
 		return nil, err
 	}
@@ -151,9 +153,9 @@ func (c *Client) GetAccountActivities(activityType *string, opts *AccountActivit
 	var u *url.URL
 	var err error
 	if activityType == nil {
-		u, err = url.Parse(fmt.Sprintf("%s/%s/account/activities", base, apiVersion))
+		u, err = url.Parse(fmt.Sprintf("%s/%s/account/activities", c.base, apiVersion))
 	} else {
-		u, err = url.Parse(fmt.Sprintf("%s/%s/account/activities/%s", base, apiVersion, *activityType))
+		u, err = url.Parse(fmt.Sprintf("%s/%s/account/activities/%s", c.base, apiVersion, *activityType))
 	}
 	if err != nil {
 		return nil, err
@@ -197,7 +199,7 @@ func (c *Client) GetAccountActivities(activityType *string, opts *AccountActivit
 }
 
 func (c *Client) GetPortfolioHistory(period *string, timeframe *RangeFreq, dateEnd *time.Time, extendedHours bool) (*PortfolioHistory, error) {
-	u, err := url.Parse(fmt.Sprintf("%s/%s/account/portfolio/history", base, apiVersion))
+	u, err := url.Parse(fmt.Sprintf("%s/%s/account/portfolio/history", c.base, apiVersion))
 
 	if err != nil {
 		return nil, err
@@ -239,7 +241,7 @@ func (c *Client) GetPortfolioHistory(period *string, timeframe *RangeFreq, dateE
 
 // ListPositions lists the account's open positions.
 func (c *Client) ListPositions() ([]Position, error) {
-	u, err := url.Parse(fmt.Sprintf("%s/%s/positions", base, apiVersion))
+	u, err := url.Parse(fmt.Sprintf("%s/%s/positions", c.base, apiVersion))
 	if err != nil {
 		return nil, err
 	}
@@ -260,7 +262,7 @@ func (c *Client) ListPositions() ([]Position, error) {
 
 // GetPosition returns the account's position for the provided symbol.
 func (c *Client) GetPosition(symbol string) (*Position, error) {
-	u, err := url.Parse(fmt.Sprintf("%s/%s/positions/%s", base, apiVersion, symbol))
+	u, err := url.Parse(fmt.Sprintf("%s/%s/positions/%s", c.base, apiVersion, symbol))
 	if err != nil {
 		return nil, err
 	}
@@ -372,7 +374,7 @@ func (c *Client) GetLastTrade(symbol string) (*LastTradeResponse, error) {
 
 // CloseAllPositions liquidates all open positions at market price.
 func (c *Client) CloseAllPositions() error {
-	u, err := url.Parse(fmt.Sprintf("%s/%s/positions", base, apiVersion))
+	u, err := url.Parse(fmt.Sprintf("%s/%s/positions", c.base, apiVersion))
 	if err != nil {
 		return err
 	}
@@ -387,7 +389,7 @@ func (c *Client) CloseAllPositions() error {
 
 // ClosePosition liquidates the position for the given symbol at market price.
 func (c *Client) ClosePosition(symbol string) error {
-	u, err := url.Parse(fmt.Sprintf("%s/%s/positions/%s", base, apiVersion, symbol))
+	u, err := url.Parse(fmt.Sprintf("%s/%s/positions/%s", c.base, apiVersion, symbol))
 	if err != nil {
 		return err
 	}
@@ -402,7 +404,7 @@ func (c *Client) ClosePosition(symbol string) error {
 
 // GetClock returns the current market clock.
 func (c *Client) GetClock() (*Clock, error) {
-	u, err := url.Parse(fmt.Sprintf("%s/%s/clock", base, apiVersion))
+	u, err := url.Parse(fmt.Sprintf("%s/%s/clock", c.base, apiVersion))
 	if err != nil {
 		return nil, err
 	}
@@ -424,7 +426,7 @@ func (c *Client) GetClock() (*Clock, error) {
 // GetCalendar returns the market calendar, sliced by the start
 // and end dates.
 func (c *Client) GetCalendar(start, end *string) ([]CalendarDay, error) {
-	u, err := url.Parse(fmt.Sprintf("%s/%s/calendar", base, apiVersion))
+	u, err := url.Parse(fmt.Sprintf("%s/%s/calendar", c.base, apiVersion))
 	if err != nil {
 		return nil, err
 	}
@@ -458,7 +460,7 @@ func (c *Client) GetCalendar(start, end *string) ([]CalendarDay, error) {
 // ListOrders returns the list of orders for an account,
 // filtered by the input parameters.
 func (c *Client) ListOrders(status *string, until *time.Time, limit *int, nested *bool) ([]Order, error) {
-	urlString := fmt.Sprintf("%s/%s/orders", base, apiVersion)
+	urlString := fmt.Sprintf("%s/%s/orders", c.base, apiVersion)
 	if nested != nil {
 		urlString += fmt.Sprintf("?nested=%v", *nested)
 	}
@@ -499,7 +501,7 @@ func (c *Client) ListOrders(status *string, until *time.Time, limit *int, nested
 
 // PlaceOrder submits an order request to buy or sell an asset.
 func (c *Client) PlaceOrder(req PlaceOrderRequest) (*Order, error) {
-	u, err := url.Parse(fmt.Sprintf("%s/%s/orders", base, apiVersion))
+	u, err := url.Parse(fmt.Sprintf("%s/%s/orders", c.base, apiVersion))
 	if err != nil {
 		return nil, err
 	}
@@ -520,7 +522,7 @@ func (c *Client) PlaceOrder(req PlaceOrderRequest) (*Order, error) {
 
 // GetOrder submits a request to get an order by the order ID.
 func (c *Client) GetOrder(orderID string) (*Order, error) {
-	u, err := url.Parse(fmt.Sprintf("%s/%s/orders/%s", base, apiVersion, orderID))
+	u, err := url.Parse(fmt.Sprintf("%s/%s/orders/%s", c.base, apiVersion, orderID))
 	if err != nil {
 		return nil, err
 	}
@@ -541,7 +543,7 @@ func (c *Client) GetOrder(orderID string) (*Order, error) {
 
 // ReplaceOrder submits a request to replace an order by id
 func (c *Client) ReplaceOrder(orderID string, req ReplaceOrderRequest) (*Order, error) {
-	u, err := url.Parse(fmt.Sprintf("%s/%s/orders/%s", base, apiVersion, orderID))
+	u, err := url.Parse(fmt.Sprintf("%s/%s/orders/%s", c.base, apiVersion, orderID))
 	if err != nil {
 		return nil, err
 	}
@@ -562,7 +564,7 @@ func (c *Client) ReplaceOrder(orderID string, req ReplaceOrderRequest) (*Order, 
 
 // CancelOrder submits a request to cancel an open order.
 func (c *Client) CancelOrder(orderID string) error {
-	u, err := url.Parse(fmt.Sprintf("%s/%s/orders/%s", base, apiVersion, orderID))
+	u, err := url.Parse(fmt.Sprintf("%s/%s/orders/%s", c.base, apiVersion, orderID))
 	if err != nil {
 		return err
 	}
@@ -577,7 +579,7 @@ func (c *Client) CancelOrder(orderID string) error {
 
 // CancelAllOrders submits a request to cancel an open order.
 func (c *Client) CancelAllOrders() error {
-	u, err := url.Parse(fmt.Sprintf("%s/%s/orders", base, apiVersion))
+	u, err := url.Parse(fmt.Sprintf("%s/%s/orders", c.base, apiVersion))
 	if err != nil {
 		return err
 	}
@@ -594,7 +596,7 @@ func (c *Client) CancelAllOrders() error {
 // the input parameters.
 func (c *Client) ListAssets(status *string) ([]Asset, error) {
 	// TODO: support different asset classes
-	u, err := url.Parse(fmt.Sprintf("%s/%s/assets", base, apiVersion))
+	u, err := url.Parse(fmt.Sprintf("%s/%s/assets", c.base, apiVersion))
 	if err != nil {
 		return nil, err
 	}
@@ -623,7 +625,7 @@ func (c *Client) ListAssets(status *string) ([]Asset, error) {
 
 // GetAsset returns an asset for the given symbol.
 func (c *Client) GetAsset(symbol string) (*Asset, error) {
-	u, err := url.Parse(fmt.Sprintf("%s/%s/assets/%v", base, apiVersion, symbol))
+	u, err := url.Parse(fmt.Sprintf("%s/%s/assets/%v", c.base, apiVersion, symbol))
 	if err != nil {
 		return nil, err
 	}

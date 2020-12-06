@@ -33,7 +33,6 @@ func init() {
 	if common.Credentials().Secret == "" {
 		os.Setenv(common.EnvApiSecretKey, API_SECRET)
 	}
-	alpaca.SetBaseUrl(BASE_URL)
 
 	// Check if user input a stock, default is AAPL
 	stock := "AAPL"
@@ -41,7 +40,7 @@ func init() {
 		stock = os.Args[1]
 	}
 	alpacaClient = alpacaClientContainer{
-		alpaca.NewClient(common.Credentials()),
+		alpaca.NewClient(common.Credentials(), BASE_URL),
 		0.0,
 		"",
 		20,
